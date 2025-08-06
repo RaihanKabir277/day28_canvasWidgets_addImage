@@ -12,19 +12,66 @@ FONT_NAME = "courier"
 WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
+reps = 0
+timer = None
+
+# -----------Reset the timer -----------------
+
+def reset_timer():
+    window.after_cancel(timer)
+    canvas.itemconfig(timer_text, Text="00:00")
+    timer_label.config(text="Timer")
+    check_mark.config(text="")
+    global reps
+    reps = 0
 
 # -------------Countdown mechanism --------------
 def start_timer():
+    global reps
+    work_sec = (WORK_MIN * 60)
+    short_break_sec = (SHORT_BREAK_MIN * 60)
+    long_break_sec = (LONG_BREAK_MIN * 60)
+
+#    ------- as already declare mailnloop so below code will not wrok here
+    # for i in range(1, 9):
+    #     if i % 2 != 0:
+    #         count_down(work_sec)
+    #     elif i == 8:
+    #         count_down(long_break_sec)
+    #     else:
+    #         count_down(short_break_sec)
+
+    reps += 1
+    if reps % 8 == 0:
+        count_down(long_break_sec)
+        timer_label.config(text="Long Break", fg=RED)
+    elif reps % 2 == 0:
+        count_down(short_break_sec)
+        timer_label.config(text="Short Break", fg=PINK)
+    else:
+        count_down(work_sec)
+        timer_label.config(text="WORK HARD", fg=GREEN)
+
     # --------call the function for count down -----
-    count_down(5 * 60)
+    # count_down(5 * 60)
 
 def count_down(count):
+
     # print(count)
     count_min = math.floor(count / 60)
     count_sec = count % 60
+    if count_sec > -1 and count_sec < 10:
+        count_sec = f"0{count_sec}"
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
     if count > 0:
-        window.after(1000, count_down, count - 1)
+        global timer
+        timer = window.after(1000, count_down, count - 1)
+    else:
+        start_timer()
+        marks = ""
+        for _ in range(math.floor(reps/2)):
+            marks += "✓" 
+        check_mark.config(text=marks)
 
 
 # ---------UI setup----------------
@@ -50,11 +97,11 @@ start_btn = Button(text="Start",command=start_timer, highlightthickness=0)
 start_btn.grid(column=0, row=2)
 start_btn.config(padx=5,pady=5)
 
-reset_btn = Button(text="Reset",highlightthickness=0)
+reset_btn = Button(text="Reset",command=reset_timer, highlightthickness=0)
 reset_btn.grid(column=2 , row=2)
 reset_btn.config(padx=5, pady=5)
 
-check_mark = Label(text="✓",font=(FONT_NAME,25,"bold"), fg=RED, bg=YELLOW, highlightthickness=0, pady=20)
+check_mark = Label(font=(FONT_NAME,25,"bold"), fg=RED, bg=YELLOW, highlightthickness=0, pady=20)
 check_mark.grid(column=1, row=2)
 
 
